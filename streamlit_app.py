@@ -117,6 +117,7 @@ elif menu == "Manage Progress":
     df = fetch_records()
     if not df.empty:
         # Configure AgGrid table
+        df.columns = [c.lower() for c in df.columns]
         gb = GridOptionsBuilder.from_dataframe(df)
         gb.configure_selection("single", use_checkbox=True)  # single row selection
         grid_options = gb.build()
