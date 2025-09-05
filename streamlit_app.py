@@ -32,23 +32,22 @@ def insert_record(date, topic, hours, status, notes):
 # Fetch records
 def fetch_records():
     try:
-        cursor.execute("SELECT * FROM de_learning_progress LIMIT 5")
-        rows = cursor.fetchall()
+        with sql.connect(
+            server_hostname=DATABRICKS_SERVER,
+            http_path=DATABRICKS_HTTP_PATH,
+            access_token=DATABRICKS_TOKEN
+        ) as connection:
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM de_learning_progress ORDER BY date DESC")
+            rows = cursor.fetchall()
+            cols = [desc[0] for desc in cursor.description]
+            df = pd.DataFrame(rows, columns=cols)
+            cursor.close()
+        return df
     except Exception as e:
-        st.error(f"Databricks error: {str(e)}")
+        st.error(f"Databricks error while fetching records: {str(e)}")
+        return pd.DataFrame()   # safe fallback
 
-    # with sql.connect(
-    #     server_hostname=DATABRICKS_SERVER,
-    #     http_path=DATABRICKS_HTTP_PATH,
-    #     access_token=DATABRICKS_TOKEN
-    # ) as connection:
-    #     cursor = connection.cursor()
-    #     cursor.execute("SELECT * FROM de_learning_progress ORDER BY date DESC")
-    #     rows = cursor.fetchall()
-    #     cols = [desc[0] for desc in cursor.description]
-    #     df = pd.DataFrame(rows, columns=cols)
-    #     cursor.close()
-    # return df
 
 # Streamlit UI
 st.title("📊 DE Learning Progress Tracker")
