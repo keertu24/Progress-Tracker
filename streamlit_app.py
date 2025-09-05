@@ -131,7 +131,7 @@ elif menu == "Manage Progress":
         )
 
         # Get selected row
-        selected = grid_response.get("selected_rows", [])
+        selected = list(grid_response.get("selected_rows", []))
 
 
         if selected and len(selected) > 0:
