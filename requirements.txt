@@ -1,1 +1,2 @@
-databricks-sql-connector,streamlit-aggrid
+databricks-sql-connector
+streamlit-aggrid
