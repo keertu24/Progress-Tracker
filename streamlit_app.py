@@ -58,7 +58,7 @@ if menu == "Add Progress":
     st.subheader("➕ Add Daily Progress")
     date = st.date_input("Date", datetime.date.today())
     topic = st.text_input("Topic")
-    hours = st.number_input("Hours Spent", min_value=0.0, step=0.5)
+    hours = st.number_input("Minutes Spent", min_value=0, step=5)
     status = st.selectbox("Status", ["In Progress", "Completed"])
     notes = st.text_area("Notes")
     
