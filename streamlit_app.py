@@ -29,6 +29,38 @@ def insert_record(date, topic, minutes, status, notes):
         """)
         cursor.close()
 
+
+def update_record(record_id, date, topic, minutes, status, notes):
+    with sql.connect(
+        server_hostname=DATABRICKS_SERVER,
+        http_path=DATABRICKS_HTTP_PATH,
+        access_token=DATABRICKS_TOKEN
+    ) as connection:
+        cursor = connection.cursor()
+        cursor.execute(f"""
+            UPDATE de_learning_progress
+            SET date = '{date}',
+                topic = '{topic}',
+                minutes = {minutes},
+                status = '{status}',
+                notes = '{notes}'
+            WHERE id = '{record_id}'
+        """)
+        cursor.close()
+
+def delete_record(record_id):
+    with sql.connect(
+        server_hostname=DATABRICKS_SERVER,
+        http_path=DATABRICKS_HTTP_PATH,
+        access_token=DATABRICKS_TOKEN
+    ) as connection:
+        cursor = connection.cursor()
+        cursor.execute(f"""
+            DELETE FROM de_learning_progress
+            WHERE id = '{record_id}'
+        """)
+        cursor.close()
+
 # Fetch records
 def fetch_records():
     try:
@@ -52,7 +84,8 @@ def fetch_records():
 # Streamlit UI
 st.title("📊 DE Learning Progress Tracker")
 
-menu = st.sidebar.radio("Menu", ["Add Progress", "View Progress"])
+menu = st.sidebar.radio("Menu", ["Add Progress", "View Progress", "Update Progress", "Delete Progress"])
+
 
 if menu == "Add Progress":
     st.subheader("➕ Add Daily Progress")
@@ -76,3 +109,30 @@ elif menu == "View Progress":
         st.line_chart(daily_minutes, x="date", y="minutes")
     else:
         st.info("No progress records found.")
+        
+elif menu == "Update Progress":
+    st.subheader("✏️ Update Progress")
+    df = fetch_records()
+    if not df.empty:
+        record_id = st.selectbox("Select Record ID", df["id"])
+        selected = df[df["id"] == record_id].iloc[0]
+
+        date = st.date_input("Date", selected["date"])
+        topic = st.text_input("Topic", selected["topic"])
+        minutes = st.number_input("Minutes Spent", min_value=0, step=5, value=int(selected["minutes"]))
+        status = st.selectbox("Status", ["In Progress", "Completed"], index=0 if selected["status"]=="In Progress" else 1)
+        notes = st.text_area("Notes", selected["notes"])
+
+        if st.button("Update"):
+            update_record(record_id, date, topic, minutes, status, notes)
+            st.success("Record updated successfully!")
+
+elif menu == "Delete Progress":
+    st.subheader("🗑 Delete Progress")
+    df = fetch_records()
+    if not df.empty:
+        record_id = st.selectbox("Select Record ID", df["id"])
+        if st.button("Delete"):
+            delete_record(record_id)
+            st.warning("Record deleted successfully!")
+
