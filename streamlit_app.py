@@ -32,10 +32,10 @@ def insert_record(date, topic, hours, status, notes):
 # Fetch records
 def fetch_records():
     try:
-    cursor.execute("SELECT * FROM de_learning_progress LIMIT 5")
-    rows = cursor.fetchall()
+        cursor.execute("SELECT * FROM de_learning_progress LIMIT 5")
+        rows = cursor.fetchall()
     except Exception as e:
-    st.error(f"Databricks error: {str(e)}")
+        st.error(f"Databricks error: {str(e)}")
 
     # with sql.connect(
     #     server_hostname=DATABRICKS_SERVER,
