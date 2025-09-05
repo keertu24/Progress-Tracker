@@ -3,6 +3,7 @@ import pandas as pd
 import uuid
 import datetime
 from databricks import sql
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 # Databricks connection details
 DATABRICKS_SERVER = "dbc-7e665065-c769.cloud.databricks.com"
@@ -115,33 +116,45 @@ elif menu == "Manage Progress":
 
     df = fetch_records()
     if not df.empty:
-        st.dataframe(df)
+        # Configure AgGrid table
+        gb = GridOptionsBuilder.from_dataframe(df)
+        gb.configure_selection("single", use_checkbox=True)  # single row selection
+        grid_options = gb.build()
 
-        # Let user select a row by topic (or ID)
-        selected_id = st.selectbox("Select a record to manage", df["id"])
+        # Render table
+        grid_response = AgGrid(
+            df,
+            gridOptions=grid_options,
+            update_mode=GridUpdateMode.SELECTION_CHANGED,
+            theme="streamlit",
+            fit_columns_on_grid_load=True
+        )
 
-        # Get the selected row
-        selected = df[df["id"] == selected_id].iloc[0]
+        # Get selected row
+        selected = grid_response["selected_rows"]
 
-        st.write("### Selected Record")
-        st.write(selected)
+        if selected:
+            record = selected[0]  # first (and only) selected row
+            record_id = record["id"]
 
-        # Update form
-        with st.expander("✏️ Update Record"):
-            date = st.date_input("Date", selected["date"])
-            topic = st.text_input("Topic", selected["topic"])
-            minutes = st.number_input("Minutes Spent", min_value=0, step=5, value=int(selected["minutes"]))
-            status = st.selectbox("Status", ["In Progress", "Completed"], 
-                                  index=0 if selected["status"]=="In Progress" else 1)
-            notes = st.text_area("Notes", selected["notes"])
+            st.write("### Selected Record")
+            st.json(record)
 
-            if st.button("Update Record"):
-                update_record(selected_id, date, topic, minutes, status, notes)
-                st.success("Record updated successfully!")
+            # Update form
+            with st.expander("✏️ Update Record"):
+                date = st.date_input("Date", pd.to_datetime(record["date"]))
+                topic = st.text_input("Topic", record["topic"])
+                minutes = st.number_input("Minutes Spent", min_value=0, step=5, value=int(record["minutes"]))
+                status = st.selectbox("Status", ["In Progress", "Completed"],
+                                      index=0 if record["status"] == "In Progress" else 1)
+                notes = st.text_area("Notes", record["notes"])
 
-        # Delete action
-        with st.expander("🗑 Delete Record"):
-            if st.button("Delete Record"):
-                delete_record(selected_id)
-                st.warning("Record deleted successfully!")
+                if st.button("Update Record"):
+                    update_record(record_id, date, topic, minutes, status, notes)
+                    st.success("Record updated successfully!")
 
+            # Delete action
+            with st.expander("🗑 Delete Record"):
+                if st.button("Delete Record"):
+                    delete_record(record_id)
+                    st.warning("Record deleted successfully!")
