@@ -72,6 +72,7 @@ elif menu == "View Progress":
     if not df.empty:
         st.dataframe(df)
         st.bar_chart(df.groupby("date")["hours"].sum())
+        daily_minutes = df.groupby("date")["minutes"].sum().reset_index()
         st.line_chart(daily_minutes, x="date", y="hours")
     else:
         st.info("No progress records found.")
