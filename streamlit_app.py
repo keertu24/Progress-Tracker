@@ -133,7 +133,7 @@ elif menu == "Manage Progress":
         # Get selected row
         selected = grid_response["selected_rows"]
 
-        if selected:
+        if selected and len(selected) > 0:
             record = selected[0]  # first (and only) selected row
             record_id = record["id"]
 
