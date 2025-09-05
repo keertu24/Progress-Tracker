@@ -136,6 +136,9 @@ elif menu == "Manage Progress":
 
         if selected and len(selected) > 0:
             record = selected[0]  # first (and only) selected row
+            st.write("DEBUG - selected row structure:")
+            st.json(record)
+
             record_id = record["id"]
 
             st.write("### Selected Record")
