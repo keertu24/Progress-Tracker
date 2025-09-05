@@ -38,7 +38,7 @@ def fetch_records():
             access_token=DATABRICKS_TOKEN
         ) as connection:
             cursor = connection.cursor()
-            cursor.execute("SELECT * FROM de_learning_progress ORDER BY date DESC")
+            cursor.execute("SELECT * FROM de_learning.tarcker_app.de_learning_progress ORDER BY date DESC")
             rows = cursor.fetchall()
             cols = [desc[0] for desc in cursor.description]
             df = pd.DataFrame(rows, columns=cols)
